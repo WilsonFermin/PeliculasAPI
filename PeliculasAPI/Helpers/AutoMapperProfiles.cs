@@ -22,7 +22,40 @@ namespace PeliculasAPI.Helpers
                 .ForMember(x => x.PeliculasGeneros, options => options.MapFrom(MapPeliculasGeneros))
                 .ForMember(x => x.PeliculasActores, options => options.MapFrom(MapPeliculasActores));
 
+            CreateMap<Pelicula, PeliculaDetallesDTO>()
+                .ForMember(x => x.Generos, options => options.MapFrom(MapPeliculasGeneros))
+                .ForMember(x => x.Actores, options => options.MapFrom(MapPeliculasActores));
+
             CreateMap<PeliculaPatchDTO, Pelicula>().ReverseMap();
+        }
+
+        private List<ActorPeliculaDetallesDTO> MapPeliculasActores(Pelicula pelicula, PeliculaDetallesDTO peliculaDetallesDTO)
+        {
+            var resultado = new List<ActorPeliculaDetallesDTO>();
+            if (pelicula.PeliculasActores == null) { return resultado; }
+            foreach (var actorPelicula in pelicula.PeliculasActores)
+            {
+                resultado.Add(new ActorPeliculaDetallesDTO() 
+                { 
+                    ActorId = actorPelicula.ActorID, 
+                    NombrePersona = actorPelicula.Actor.Nombre,
+                    Personaje = actorPelicula.Personaje
+                });
+            }
+
+            return resultado;
+        }
+
+        private List<GeneroDTO> MapPeliculasGeneros(Pelicula pelicula, PeliculaDetallesDTO peliculaDetallesDTO)
+        {
+            var resultado = new List<GeneroDTO>();
+            if (pelicula.PeliculasGeneros == null) { return resultado; }
+            foreach (var generoPelicula in pelicula.PeliculasGeneros)
+            {
+                resultado.Add(new GeneroDTO() { Id = generoPelicula.GeneroID, Nombre = generoPelicula.Genero.Nombre });
+            }
+
+            return resultado;
         }
 
         //Hacemos el mapeo de GenerosIDs hacia PeliculasGeneros
