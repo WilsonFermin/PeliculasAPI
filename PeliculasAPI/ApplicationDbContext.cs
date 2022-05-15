@@ -1,9 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using NetTopologySuite;
+using NetTopologySuite.Geometries;
 using PeliculasAPI.Entidades;
+using System.Security.Claims;
 
 namespace PeliculasAPI
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext
     {
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
@@ -22,7 +27,7 @@ namespace PeliculasAPI
 
             SeedData(modelBuilder);
 
-            //base.OnModelCreating(modelBuilder);
+            base.OnModelCreating(modelBuilder);
         }
 
         private void SeedData(ModelBuilder modelBuilder)
@@ -115,6 +120,79 @@ namespace PeliculasAPI
                     new PeliculasActores(){PeliculaID = iw.Id, ActorID = chrisEvans.Id, Personaje = "Steve Rogers", Orden = 2},
                     new PeliculasActores(){PeliculaID = sonic.Id, ActorID = jimCarrey.Id, Personaje = "Dr. Ivo Robotnik", Orden = 1}
                 });
+
+            var geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
+
+            var sambil = new SalaDeCine() 
+            { 
+                Id = 4, 
+                Nombre = "Sambil", 
+                Ubicacion = geometryFactory.CreatePoint(new Coordinate(-69.9118804 ,18.482614)) 
+            };
+
+            var megaCentro = new SalaDeCine() 
+            { 
+                Id = 5, 
+                Nombre = "Megacentro", 
+                Ubicacion = geometryFactory.CreatePoint(new Coordinate(-69.856427, 18.506934)) 
+            };
+
+            var villageEastCinema = new SalaDeCine()
+            {
+                Id = 6,
+                Nombre = "Villa East Cinema",
+                Ubicacion = geometryFactory.CreatePoint(new Coordinate(-73.986227, 50.730898))
+            };
+
+            modelBuilder.Entity<SalaDeCine>()
+                .HasData(new List<SalaDeCine>()
+                { 
+                    sambil, megaCentro, villageEastCinema 
+                });
+
+            //Creando un usuario de prueba
+
+            var rolAdminId = "0e079d78-cea9-4724-bf6d-314168bb42ac";
+            var usuarioAdminId = "7a37f0b3-3648-42a3-91b1-9b9d94f60924";
+
+            var rolAdmin = new IdentityRole()
+            {
+                Id = rolAdminId,
+                Name = "Admin",
+                NormalizedName = "Admin"
+            };
+
+            var passwordHasher = new PasswordHasher<IdentityUser>();
+
+            var username = "wilson@hotmail.com";
+
+            var usuarioAdmin = new IdentityUser()
+            {
+                Id = usuarioAdminId,
+                UserName = username,
+                NormalizedUserName = username,
+                Email = username,
+                NormalizedEmail = username,
+                PasswordHash = passwordHasher.HashPassword(null, "Aa123456!")
+            };
+
+            ////Agregamos el usuario
+            //modelBuilder.Entity<IdentityUser>()
+            //    .HasData(usuarioAdmin);
+
+            ////Agregamos el rol
+            //modelBuilder.Entity<IdentityRole>()
+            //    .HasData(rolAdmin);
+
+            ////Agregamos el rol al usuario
+            //modelBuilder.Entity<IdentityUserClaim<string>>()
+            //    .HasData(new IdentityUserClaim<string>()
+            //    {
+            //        Id = 1,
+            //        ClaimType = ClaimTypes.Role,
+            //        UserId = usuarioAdminId,
+            //        ClaimValue = "Admin"
+            //    });
         }
 
         public DbSet<Genero> Generos { get; set; }
