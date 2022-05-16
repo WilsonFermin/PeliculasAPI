@@ -202,6 +202,7 @@ namespace PeliculasAPI
         public DbSet<PeliculasGeneros> PeliculasGeneros { get; set; }
         public DbSet<SalaDeCine> SalasDeCine { get; set; }
         public DbSet<PeliculasSalasDeCine> PeliculasSalasDeCines { get; set; }
+        public DbSet<Review> Reviews { get; set; }
 
     }
 }
